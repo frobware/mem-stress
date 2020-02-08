@@ -8,10 +8,6 @@
 #include <sys/types.h>
 #include <pthread.h>
 
-#if 0
-#include "c-utilities/humanize_number/humanize_number.h"
-#endif
-
 #define MIN(A, B) ((A) < (B) ? (A) : (B))
 #define OneMB ((1024 * 1024))
 
@@ -79,7 +75,7 @@ static void oom_kill_disable() {
 	}
 
 	if (write(fileno(fp), "-1000", 5) != 5) {
-		perror("fopen");
+		perror("write");
 		exit(1);
 	}
 
