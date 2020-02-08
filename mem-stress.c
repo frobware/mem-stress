@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <signal.h>
 #include <unistd.h>
+#include <sys/types.h>
 #include <pthread.h>
 
 #if 0
@@ -69,8 +70,9 @@ static void *thread_start(void *arg)
 }
 
 static void oom_kill_disable() {
-	FILE *fp = fopen("/proc/self/oom_score_adj", "w");
+	printf("Running with privileges: Adjusting OOM score\n");
 
+	FILE *fp = fopen("/proc/self/oom_score_adj", "w");
 	if (fp == NULL) {
 		perror("fopen");
 		exit(1);
@@ -81,6 +83,7 @@ static void oom_kill_disable() {
 		exit(1);
 	}
 
+	printf("echo -1000 | tee -a /proc/self/oom_score_adj\n");
 	fclose(fp);
 }
 
@@ -93,9 +96,11 @@ int main(int argc, char *argv[])
 
 	set_signal_handler(SIGINT, handle_sigint);
 	set_signal_handler(SIGTERM, handle_sigterm);
-#if 0
-	oom_kill_disable();
-#endif	
+
+	if (geteuid() == 0) {
+		oom_kill_disable();
+	}
+	
 	for (int i = 0; i < atoi(argv[1]); i++) {
 		pthread_t thrid;
 		pthread_create(&thrid, NULL, &thread_start, argv[1]);
